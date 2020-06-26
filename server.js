@@ -1,5 +1,5 @@
 // deploying mongoDB
-require('./db/mongoose')
+
 var express = require('express');
 var app = express();
 const PORT = process.env.PORT || 8081;
@@ -8,9 +8,8 @@ const socketio = require('socket.io')
 const http = require('http')
 const sessions = require('express-session');
 const {eventRoute, userRoute, friendRoute, feedRoute, convoRoute} = require('./Routes');
-
 app.use(bodyParser.json());
-
+require('./db/mongoose')
 
 
 
