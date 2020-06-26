@@ -1,5 +1,5 @@
 // deploying mongoDB
-require('./db/mongoose');
+require('./db/mongoose')
 var express = require('express');
 var app = express();
 const PORT = process.env.PORT || 8081;

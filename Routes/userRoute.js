@@ -8,7 +8,7 @@ const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const requireAuth = require('../middleware/requireAuth');
 const sharp = require('sharp');
-const { has } = require('lodash');
+
 
 //getting all users!
 UserRoute.route("/get")
