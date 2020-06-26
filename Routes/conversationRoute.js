@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const { user, convos, message } = require('../db/models');
+
+const { convos} = require('../db/models');
 const requireAuth = require('../middleware/requireAuth');
 
 
@@ -103,7 +103,7 @@ const Conversations = async (app, io) => {
                     //  const userValues = Object.values(users)
                      //const socketIds = Object.keys(users)
                      const message = {
-                         //_id:uuidv4(),
+                         
                          text:action.data.message.text,
                          user:action.data.message.user
                      }
