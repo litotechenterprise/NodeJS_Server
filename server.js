@@ -19,11 +19,11 @@ app.listen(PORT, function(){
   console.log("listening on port "+PORT)
 })
 
-const {eventRoute, userRoute, friendRoute, feedRoute, convoRoute} = require('./Routes');
-app.use('/events', eventRoute);
-app.use('/feed', feedRoute);
-app.use('/user', userRoute);
-app.use('/friends', friendRoute);
+// const {eventRoute, userRoute, friendRoute, feedRoute, convoRoute} = require('./Routes');
+// app.use('/events', eventRoute);
+// app.use('/feed', feedRoute);
+// app.use('/user', userRoute);
+// app.use('/friends', friendRoute);
 
 // const http = require('http')
 // const socketio = require('socket.io')
