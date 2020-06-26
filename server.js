@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 8081;
 const bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
-require('./db/mongoose')
+
 
 const sessions = require('express-session');
 app.use(sessions({
@@ -34,3 +34,4 @@ server.listen(PORT, function(){
 });
 const io = socketio(server)
 convoRoute(app, io);
+//require('./db/mongoose')
