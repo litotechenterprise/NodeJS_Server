@@ -3,7 +3,7 @@ var express = require('express');
 var app = express();
 const PORT = process.env.PORT || 8081;
 const bodyParser = require('body-parser');
-//require('./db/mongoose.js')
+require('./db/mongoose.js')
 
 
 app.use(bodyParser.json());
@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 // }))
 
 app.get('/', (req,res) => {
-    res.send('Welcome to the GreenLinks API')
+    res.send('Welcome to the GreenLinks API from lito')
 })
 app.listen(PORT, function(){
   console.log("listening on port "+PORT)
