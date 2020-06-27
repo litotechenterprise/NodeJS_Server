@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 8080;
 const bodyParser = require('body-parser');
 //require('./db/mongoose.js')
 const connectToDatabase = require('./db/db')
-const { user} = require('../db/models');
+const { user} = require('./db/models');
 
 app.use(bodyParser.json());
 // const sessions = require('express-session');
