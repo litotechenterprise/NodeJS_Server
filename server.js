@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 8080;
 const bodyParser = require('body-parser');
 //require('./db/mongoose.js')
 const connectToDatabase = require('./db/db')
-const { user} = require('./db/models');
+//const { user} = require('./db/models');
 
 app.use(bodyParser.json());
 // const sessions = require('express-session');
@@ -16,9 +16,7 @@ app.use(bodyParser.json());
 // }))
 
 app.get('/', async (req,res) => {
-    await connectToDatabase()
-    const users = await user.find({})
-    res.status(200).send(users);
+ res.send("made it here")
 })
 // app.listen(PORT, function(){
 //   console.log("listening on port "+PORT)
