@@ -7,12 +7,12 @@ const bodyParser = require('body-parser');
 
 
 app.use(bodyParser.json());
-const sessions = require('express-session');
-app.use(sessions({
-  secret:' SECRETKEY',
-  resave:false,
-  saveUninitialized:false,
-}))
+// const sessions = require('express-session');
+// app.use(sessions({
+//   secret:' SECRETKEY',
+//   resave:false,
+//   saveUninitialized:false,
+// }))
 
 app.get('/', (req,res) => {
     res.send('Welcome to the GreenLinks API')
