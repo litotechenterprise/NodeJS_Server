@@ -3,7 +3,7 @@ var express = require('express');
 var app = express();
 const PORT = process.env.PORT || 8080;
 const bodyParser = require('body-parser');
-//require('./db/mongoose.js')
+require('./db/mongoose.js')
 
 
 app.use(bodyParser.json());
