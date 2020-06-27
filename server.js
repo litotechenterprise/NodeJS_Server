@@ -3,8 +3,9 @@ var express = require('express');
 var app = express();
 const PORT = process.env.PORT || 8080;
 const bodyParser = require('body-parser');
-require('./db/mongoose.js')
-
+//require('./db/mongoose.js')
+const connectToDatabase = require('./db/db')
+const { user} = require('../db/models');
 
 app.use(bodyParser.json());
 // const sessions = require('express-session');
@@ -14,8 +15,10 @@ app.use(bodyParser.json());
 //   saveUninitialized:false,
 // }))
 
-app.get('/', (req,res) => {
-    res.send('Welcome to the GreenLinks API from lito')
+app.get('/', async (req,res) => {
+    await connectToDatabase()
+    const users = await user.find({})
+    res.status(200).send(users);
 })
 // app.listen(PORT, function(){
 //   console.log("listening on port "+PORT)
