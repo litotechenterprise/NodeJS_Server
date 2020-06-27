@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 8082;
 const bodyParser = require('body-parser');
 //require('./db/mongoose.js')
 app.use(bodyParser.json());
-const sessions = require('express-session');
+//const sessions = require('express-session');
 // app.use(sessions({
 //   secret:' SECRETKEY',
 //   resave:false,
