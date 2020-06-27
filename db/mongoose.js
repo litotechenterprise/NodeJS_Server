@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.DB, { useNewUrlParser: true}).then(() => {
+mongoose.connect("mongodb+srv://CEO_Lito:Dtgfu1314!@maindb-vbe1p.mongodb.net/MainDB?retryWrites=true&w=majority", { useNewUrlParser: true}).then(() => {
     console.log("Connected to MongoDB successfully");
 }).catch((e) => {
     console.log("Error while attempting to connect to MongoDB");
