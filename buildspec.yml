@@ -4,8 +4,8 @@ phases:
       install:
         commands:
             #Install dependancies needed for running test
-            npm install
+            - npm install
         
 
             #upgrade AWS CLI to the lastest versions
-            pip install --upgrade awscli
+            - pip install --upgrade awscli
