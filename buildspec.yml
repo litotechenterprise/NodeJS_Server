@@ -9,3 +9,6 @@ phases:
 
             #upgrade AWS CLI to the lastest versions
             - pip install --upgrade awscli
+        pre_build:
+          commands:
+            - npm install
