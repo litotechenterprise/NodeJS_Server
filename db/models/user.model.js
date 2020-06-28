@@ -123,7 +123,8 @@ const UserSchema = new mongoose.Schema({
             type:String,
             required: true
         }
-    }] 
+    }],
+    ExpoPushtoken: String 
 }, {
     timestamps: true
 });
