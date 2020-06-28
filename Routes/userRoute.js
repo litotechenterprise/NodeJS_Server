@@ -206,14 +206,16 @@ UserRoute.get('/get/note/count',requireAuth, async (req,res) => {
 })
 
 UserRoute.post('/set/pushToken', requireAuth, async(req,res) => {
-   const User = req.user
    try {
-      User.ExpoPushtoken = req.body.Pushtoken
-      User.save()
-      res.sendStatus(200)
+
+      req.user.ExpoPushtoken = req.body.PushToken
+      req.user.save()
+      res.send()
+
    } catch {
       res.status(500).send()
    }
+
 })
 
 
