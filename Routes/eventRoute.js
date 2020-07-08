@@ -36,16 +36,17 @@ eventRouter.post('/create',requireAuth, async(req, res) => {
 eventRouter.route("/:id")
     .get(requireAuth, async (req, res) => {
         const _id = req.params.id
-
+        
+        
         try {
-        const foundEvent  = await event.findByID({_id})
+            
+            const foundEvent  = await event.findOne({_id})
 
-        if (!foundEvent) {
-            return res.status(404).send({'error':'Cannot find this event'})
-        }
+            if (!foundEvent) {
+                return res.status(404).send({'error':'Cannot find this event'})
+            }
 
-        res.status(200).send(foundEvent)
-
+            res.status(200).send(foundEvent)
         } catch(e) {
             res.status(500).send()
         }

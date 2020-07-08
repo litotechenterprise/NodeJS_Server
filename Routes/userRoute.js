@@ -8,6 +8,7 @@ const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const requireAuth = require('../middleware/requireAuth');
 const sharp = require('sharp');
+const { userRoute } = require('.');
 
 
 //getting all users!
@@ -35,7 +36,7 @@ UserRoute.route("/currentUser")
    .patch(requireAuth, async (req, res) => {
       
       const updates = Object.keys(req.body)
-      const allowedToBeUpdated = [ 'bio', 'email'];
+      const allowedToBeUpdated = [ 'bio', 'email', 'firstName', 'lastName','link'];
       const validUpdate = updates.every((update) => allowedToBeUpdated.includes(update));
 
       if(!validUpdate) {
@@ -80,7 +81,6 @@ UserRoute.patch('/change/password', requireAuth, async(req,res) => {
       return res.status(200).send('Changed Password')
    })
 
-
 })
 
 
@@ -94,15 +94,16 @@ UserRoute.route('/:id')
            return res.status(404).send({"error":"User not found"});
         }
         
-        const friends = areFriends(foundUser.friendsArray,req.user.username)
-        const isYou = yourself(foundUser.username, req.user.username)
-        res.status(200).send({foundUser, friends, isYou})
+        const friends = await areFriends(foundUser.friendsArray,req.user.username)
+        const isYou = await yourself(foundUser.username, req.user.username)
+        const MutualFriends = await mutualFriends(foundUser.friendsArray, req.user.friendsArray)
+        res.status(200).send({foundUser, friends, isYou, MutualFriends})
       } catch(e) {
          res.status(500).send();
       }
 });
 
-function yourself(user1, user2){
+async function yourself(user1, user2){
    if(user1 != user2){
       return false
    } else {
@@ -110,8 +111,28 @@ function yourself(user1, user2){
    }
 }
 
+async function mutualFriends(arr1,arr2) {
+   let ret = []
+   for(var i in arr1) {   
+       if(arr2.indexOf(arr1[i]) > -1){
+           ret.push(arr1[i]);
+       }
+   }
+   // mutual firends object
+   let MFO = {hasMF : false}
 
-function areFriends(array, usernameKey){
+   if(ret.length > 0) {
+      MFO = {
+         MutualFriendCount : ret.length,
+         hasMF : true
+      }
+   }
+
+   return MFO;
+}
+
+
+async function areFriends(array, usernameKey){
    for (var i=0; i < array.length; i++) {
       if (array[i].username === usernameKey) {
           return true;
@@ -138,6 +159,20 @@ UserRoute.route('/:id/username')
          res.status(500).send();
       }
 });
+
+// finding User by username
+UserRoute.get('/search/:username', requireAuth, async(req,res) => {
+   const Username = req.params.username;
+   try{
+      const foundUsers = await user.find({username: {$regex: ".*"+Username+".*"}})
+        if(!foundUsers) {
+           return res.status(200).send({"error":"Users not found"});
+        }
+        res.status(200).send(foundUsers)
+   } catch (e) {
+      res.status(200).send();
+   }
+})
 
 // getting current user Friends Array AKA returning friends of user
 UserRoute.get('/get/friends',requireAuth, (req,res) => {
@@ -203,6 +238,26 @@ UserRoute.get('/get/note/count',requireAuth, async (req,res) => {
 
    const count = NotificationArray.length
    res.send({count})
+})
+
+UserRoute.post('/Dismiss/Notification', requireAuth, async(req,res) => {
+
+   try{
+      const User = req.user
+      const FriendRequestID = req.body.RequestID
+
+      User.updateOne({
+         $pull: { notifications: {_id: FriendRequestID} }
+      }).then((done) => {
+         // doesn't work if (.)Then isnt there  
+      })
+
+      res.sendStatus(200)
+
+   } catch(e) {
+      console.log(e)
+      res.sendStatus(500)
+   }
 })
 
 UserRoute.post('/set/pushToken', requireAuth, async(req,res) => {
@@ -383,7 +438,6 @@ UserRoute.route('/profilePic')
    })
 
 
-
 UserRoute.get('/:id/profilePic', async (req,res) => {
    try {
       const User = await user.findById(req.params.id)
@@ -393,6 +447,63 @@ UserRoute.get('/:id/profilePic', async (req,res) => {
    }catch(err) {
       res.status(404).send()
    }
+})
+
+
+UserRoute.route('/picture/:id')
+   .post(requireAuth, upload.single('upload'), async(req,res) => {
+      const buffer = await sharp(req.file.buffer).resize({width:300,height:300}).png().toBuffer()
+
+      req.user.profilePic = buffer
+      req.user.save()
+      res.send()
+
+   }, (error, req,res,next) => {
+      res.status(400).send({error:error.message})
+   })
+
+   .patch(requireAuth,upload.single('upload'), async(req,res) => {
+      const buffer = await sharp(req.file.buffer).resize({width:300,height:300}).png().toBuffer()
+   
+      req.user.profilePic = buffer
+      req.user.save()
+      res.send()
+
+      }, (error, req,res,next) => {
+         res.status(400).send({error:error.message})
+      })
+
+   .delete(requireAuth, async(req,res) => {
+         req.user.profilePic = undefined
+         await req.user.save()
+         res.send()
+   })
+
+
+
+// UserRoute.get('/:id/profilePic', async (req,res) => {
+//    try {
+//       const User = await user.findById(req.params.id)
+//       res.set('Content-Type', 'image/png')
+//       res.send(User.profilePic)
+
+//    }catch(err) {
+//       res.status(404).send()
+//    }
+// })
+
+
+////   BLOCKING USERS && Unblocking users
+UserRoute.post('/block', requireAuth, (req,res) => {
+   try{
+      console.log(req.body)
+      res.sendStatus(200)
+   } catch(e) {
+      console.log(e)
+   }
+})
+
+UserRoute.post('/unblock', requireAuth, (req,res) => {
    
 })
 

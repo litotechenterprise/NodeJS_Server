@@ -38,10 +38,9 @@ feedRouter.get('/friends',requireAuth, async(req, res) => {
                      $centerSphere: [center, radius]
                 }
             },
-            //createdAt : {$gte: thisUser.refreshFFeed},
-        }).sort({ createdAt: 'desc' })
-
-
+            // only return the events posted in the past 24 hours
+            //createdAt : {$gt: new Date(Date.now() - 24*60*60 * 1000)},
+        }).sort({ createdAt:'desc'})
         thisUser.refreshFFeed = Date.now();
         await thisUser.save();
         res.status(200).send(events);
@@ -81,7 +80,8 @@ feedRouter.get('/community',requireAuth, async(req, res) => {
                      $centerSphere: [center, radius]
                 }
             },
-            //createdAt : {$gte: thisUser.refreshCFeed},
+            // only return the events posted in the past 24 hours
+            //createdAt : {$gt: new Date(Date.now() - 24*60*60 * 1000)},
             
         }).sort({ createdAt: 'desc' });
 

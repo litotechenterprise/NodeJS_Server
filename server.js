@@ -3,6 +3,7 @@ var express = require('express');
 var app = express();
 const PORT = process.env.PORT || 8080;
 const bodyParser = require('body-parser');
+const {eventRoute, userRoute, friendRoute, feedRoute, convoRoute} = require('./Routes');
 require('./db/mongoose.js')
 
 
@@ -18,11 +19,7 @@ app.get('/', async (req,res) => {
  res.send("Welcome to the Greenlinks Restful API")
 })
 
-// app.listen(PORT, function(){
-//   console.log("listening on port "+PORT)
-// })
 
-const {eventRoute, userRoute, friendRoute, feedRoute, convoRoute} = require('./Routes');
 app.use('/events', eventRoute);
 app.use('/feed', feedRoute);
 app.use('/user', userRoute);

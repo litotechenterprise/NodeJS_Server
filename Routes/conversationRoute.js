@@ -97,19 +97,16 @@ const Conversations = async (app, io) => {
 
                     break
                 case "server/private_message":
-                     //const conversationId = action.data.conversationId
+                    
                      const room = action.data.chatroom
-                     //const from = users[socket.id].ID
-                    //  const userValues = Object.values(users)
-                     //const socketIds = Object.keys(users)
                      const message = {
                          
                          text:action.data.message.text,
                          user:action.data.message.user
                      }
                      
-                     await convos.updateOne({_id: room},{$push : {messages:message}}).then(() => console.log("Save to Mongodb"))
-                     //socket.broadcast.to(room)
+                     await convos.updateOne({_id: room},{$push : {messages:message}})
+                     
                      socket.broadcast.to(room).emit("action", {
                         type: "private_message",
                             data: {
@@ -117,19 +114,6 @@ const Conversations = async (app, io) => {
                             conversationId: room
                         }
                      })
-                    //  for(let i=0; i < userValues.length; i++){
-                    //      if (userValues[i].ID == conversationId){
-                    //          const socketId = socketIds[i]
-                             
-                    //          io.sockets.sockets[socketId].emit("action", {
-                    //              type: "private_message",
-                    //              data: {
-                    //                 ...action.data,
-                    //                 conversationId: room
-                    //              }
-                    //          })
-                    //      }
-                    //  }
 
                      break
             }

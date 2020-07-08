@@ -124,7 +124,18 @@ const UserSchema = new mongoose.Schema({
             required: true
         }
     }],
-    ExpoPushtoken: String 
+    ExpoPushtoken: String,
+    link:String,
+    BlockedUsers: [{
+        blockedUser:{
+            type:String,
+            required: true
+        },
+        blockedUserID:{
+            type:String,
+            required: true
+        }
+    }] 
 }, {
     timestamps: true
 });
@@ -141,6 +152,17 @@ UserSchema.virtual('usersConverations', {
     foreignField:'userID'
 })
 
+// UserSchema.virtual('UserReporter', {
+//     ref: 'chat',
+//     localField:'_id',
+//     foreignField:'userID'
+// })
+
+// UserSchema.virtual('UserVictum', {
+//     ref: 'chat',
+//     localField:'_id',
+//     foreignField:'userID'
+// })
 
 UserSchema.methods.toJSON = function(){
 
@@ -149,7 +171,7 @@ UserSchema.methods.toJSON = function(){
 
     // return the document except the password and sessions
     // TODO omit sessions
-    return _.omit(userObject, ['password', 'tokens', 'firstName', 'lastName', 'friendsArray', 'photo',"profilePic"]);
+    return _.omit(userObject, ['password', 'tokens', 'friendsArray', 'photo',"profilePic", "ExpoPushtoken", ]);
 
 }
 
