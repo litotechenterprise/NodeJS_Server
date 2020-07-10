@@ -138,7 +138,6 @@ async function areFriends(array, usernameKey){
           return true;
       } 
    }
-   
    return false;
 }
 
@@ -160,11 +159,24 @@ UserRoute.route('/:id/username')
       }
 });
 
+
 // finding User by username
 UserRoute.get('/search/:username', requireAuth, async(req,res) => {
+   // current user
+   const thisUser = req.user
    const Username = req.params.username;
+
+   // removeing all post of user you blocked
+   const BlockedNames = GettingBlockedUsername(thisUser.BlockedUsers)
+
+
+   // removed all post of users that blocked you
+   const yourBlocked = GettingUserWhoBlockedYou(thisUser.YoureBlocked)
+
    try{
-      const foundUsers = await user.find({username: {$regex: ".*"+Username+".*"}})
+      const foundUsers = await user.find({
+         $and:[{username: {$regex: ".*"+Username+".*"}},{username: {$nin: BlockedNames}},{username: {$nin: yourBlocked}}], 
+      })
         if(!foundUsers) {
            return res.status(200).send({"error":"Users not found"});
         }
@@ -173,6 +185,22 @@ UserRoute.get('/search/:username', requireAuth, async(req,res) => {
       res.status(200).send();
    }
 })
+
+function GettingBlockedUsername(arr) {
+   let BlockedNames = []
+   for(i=0; i<arr.length;i++){
+      BlockedNames.push(thisUser.BlockedUsers[i].blockedUser)
+   }
+   return BlockedNames
+}
+
+function GettingUserWhoBlockedYou(arr) {
+   let yourBlocked = []
+   for(i=0; i<arr.length;i++){
+      yourBlocked.push(arr[i].by_User)
+   }
+   return yourBlocked
+}
 
 // getting current user Friends Array AKA returning friends of user
 UserRoute.get('/get/friends',requireAuth, (req,res) => {
@@ -304,11 +332,11 @@ UserRoute.get('/get/recents', requireAuth, async(req,res) => {
       for(let i=0; i < max; i++){
          const Event = await event.findOne({_id:recentList[i]})
          if(!Event){
-            res.status(500)
             return
          }
          recentEvents.push(Event)
       }
+
       res.status(200).send(recentEvents)
    } catch(err) {
 
@@ -493,18 +521,89 @@ UserRoute.route('/picture/:id')
 // })
 
 
-////   BLOCKING USERS && Unblocking users
-UserRoute.post('/block', requireAuth, (req,res) => {
+////   BLOCKING USERS
+UserRoute.post('/block', requireAuth, async(req,res) => {
    try{
-      console.log(req.body)
+      // Adding blocked user to current user blocked array
+      const User = req.user
+      User.BlockedUsers = User.BlockedUsers.concat(req.body)
+      await User.save()
+
+      // adding being blockedBy CurrentUser to blockedUser
+      const UserBeingBlocked = await user.findOne({
+         _id:req.body.blockedUserID,
+         username: req.body.blockedUser,
+      })
+
+      //createing blocked by obj
+      const BlockedBy= {
+         by_User: User.username,
+         by_UserID: User._id
+      }
+       
+      UserBeingBlocked.YoureBlocked = UserBeingBlocked.YoureBlocked.concat(BlockedBy)
+      await UserBeingBlocked.save()
+
+      // checking to see if they are friends
+      const friends = await areFriends(User.friendsArray, UserBeingBlocked.username)
+      console.log(friends)
+
+      // removing friends if they are firends
+      if(friends) {
+         console.log("entered")
+         User.updateOne({
+            $pull: { friendsArray: {username: UserBeingBlocked.username} },
+         }).then((sending) => {
+         });
+
+         UserBeingBlocked.updateOne({
+            $pull: { friendsArray: {username: User.username} },
+         }).then((sending) => {
+        });
+      }
+
       res.sendStatus(200)
    } catch(e) {
       console.log(e)
    }
 })
 
-UserRoute.post('/unblock', requireAuth, (req,res) => {
-   
+UserRoute.get('/get/blocked', requireAuth, async (req,res) => {
+   try {
+      res.send(req.user.BlockedUsers)
+   } catch (e) {
+      console.log(e)
+      res.sendStatus(200)
+   }
+})
+
+
+// unblocking users
+UserRoute.post('/unblock', requireAuth, async(req,res) => {
+   try {
+      const User = req.user
+      
+      const unblockedUser = await user.findOne({
+         _id:req.body.unblockedUserID
+      })
+
+      User.updateOne({
+         $pull:{BlockedUsers : {blockedUser:unblockedUser.username}}
+      }).then((done) => {
+
+      })
+
+      unblockedUser.updateOne({
+         $pull:{YoureBlocked: {by_User: User.username}}
+      }).then((done) => {
+         
+      })
+
+      res.sendStatus(200)
+   } catch (e) {
+      console.log(e)
+      res.sendStatus(200)
+   }
 })
 
 

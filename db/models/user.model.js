@@ -135,7 +135,17 @@ const UserSchema = new mongoose.Schema({
             type:String,
             required: true
         }
-    }] 
+    }],
+    YoureBlocked: [{
+        by_User:{
+            type:String,
+            required: true
+        },
+        by_UserID:{
+            type:String,
+            required: true
+        }
+    }]  
 }, {
     timestamps: true
 });
