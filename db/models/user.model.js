@@ -117,6 +117,7 @@ const UserSchema = new mongoose.Schema({
     profilePic: {
         type:Buffer,
     },
+    pictures:[Buffer],
     recentlyViewed:[String],
     tokens: [{
         token:{
@@ -181,8 +182,7 @@ UserSchema.methods.toJSON = function(){
 
     // return the document except the password and sessions
     // TODO omit sessions
-    return _.omit(userObject, ['password', 'tokens', 'friendsArray', 'photo',"profilePic", "ExpoPushtoken", ]);
-
+    return _.omit(userObject, ['password', 'tokens', 'friendsArray', 'pictures',"profilePic", "ExpoPushtoken", ]);
 }
 
 UserSchema.pre('save', async function (next) {

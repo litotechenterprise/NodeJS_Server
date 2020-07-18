@@ -97,7 +97,8 @@ UserRoute.route('/:id')
         const friends = await areFriends(foundUser.friendsArray,req.user.username)
         const isYou = await yourself(foundUser.username, req.user.username)
         const MutualFriends = await mutualFriends(foundUser.friendsArray, req.user.friendsArray)
-        res.status(200).send({foundUser, friends, isYou, MutualFriends})
+        const NumsOfOtherPhotos = await foundUser.pictures.length
+        res.status(200).send({foundUser, friends, isYou, MutualFriends, NumsOfOtherPhotos})
       } catch(e) {
          res.status(500).send();
       }
@@ -438,7 +439,7 @@ const upload = multer({
 
 UserRoute.route('/profilePic')
    .post(requireAuth, upload.single('upload'), async(req,res) => {
-      const buffer = await sharp(req.file.buffer).resize({width:200,height:200}).png().toBuffer()
+      const buffer = await sharp(req.file.buffer).resize({width:300,height:300}).png().toBuffer()
 
       req.user.profilePic = buffer
       req.user.save()
@@ -449,7 +450,7 @@ UserRoute.route('/profilePic')
    })
 
    .patch(requireAuth,upload.single('upload'), async(req,res) => {
-      const buffer = await sharp(req.file.buffer).resize({width:200,height:200}).png().toBuffer()
+      const buffer = await sharp(req.file.buffer).resize({width:300,height:300}).png().toBuffer()
    
       req.user.profilePic = buffer
       req.user.save()
@@ -468,8 +469,10 @@ UserRoute.route('/profilePic')
 
 UserRoute.get('/:id/profilePic', async (req,res) => {
    try {
+      // find user by id param
       const User = await user.findById(req.params.id)
       res.set('Content-Type', 'image/png')
+      // send back their PP
       res.send(User.profilePic)
 
    }catch(err) {
@@ -478,20 +481,28 @@ UserRoute.get('/:id/profilePic', async (req,res) => {
 })
 
 
-UserRoute.route('/picture/:id')
-   .post(requireAuth, upload.single('upload'), async(req,res) => {
-      const buffer = await sharp(req.file.buffer).resize({width:300,height:300}).png().toBuffer()
+UserRoute.route('/pictures')
+   .post(requireAuth, upload.array('photos', 3), async(req,res, next) => {
+      const User = req.user
+      const files = req.files
+      if(!files){
+         return res.sendStatus(404)
+      }
 
-      req.user.profilePic = buffer
-      req.user.save()
-      res.send()
+      for(let i=0; i< files.length; i++){
+         let buffer = await sharp(files[i].buffer).resize({width:400,height:400}).png().toBuffer()
+         User.pictures = User.pictures.concat(buffer)
+      }
+
+      User.save()
+      res.sendStatus(200)
 
    }, (error, req,res,next) => {
       res.status(400).send({error:error.message})
    })
 
-   .patch(requireAuth,upload.single('upload'), async(req,res) => {
-      const buffer = await sharp(req.file.buffer).resize({width:300,height:300}).png().toBuffer()
+   .patch(requireAuth,upload.array('photos', 3), async(req,res) => {
+      const buffer = await sharp(req.file.buffer).resize({width:400,height:400}).png().toBuffer()
    
       req.user.profilePic = buffer
       req.user.save()
@@ -509,16 +520,21 @@ UserRoute.route('/picture/:id')
 
 
 
-// UserRoute.get('/:id/profilePic', async (req,res) => {
-//    try {
-//       const User = await user.findById(req.params.id)
-//       res.set('Content-Type', 'image/png')
-//       res.send(User.profilePic)
+UserRoute.get('/:id/pictures/:num', async (req,res) => {
 
-//    }catch(err) {
-//       res.status(404).send()
-//    }
-// })
+   try {
+      const User = await user.findById(req.params.id)
+      res.set('Content-Type', 'image/png')
+      res.send(User.pictures[req.params.num])
+      //res.send(req.params.num)
+      
+   }catch(err) {
+      res.status(404).send()
+   }
+
+})
+
+
 
 
 ////   BLOCKING USERS
