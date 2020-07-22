@@ -82,6 +82,7 @@ const UserSchema = new mongoose.Schema({
         required: [true, "Must Enter a last name"],
         trim: true,
     },
+    DOB: Date,
     email: {
         type: String,
         required: [true, "Must Enter a Email"],
@@ -98,16 +99,15 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, "Must Enter a Password"],
         trim: true,
-        minlength: 6,
-        // validate(value) {
-        //     if (value.toLowerCase().includes('password')) {
-        //         throw new Error('Password cannot include the word "password"');
-        //     }
-        // }
+        minlength: 8,
+        validate(value) {
+            if (value.toLowerCase().includes('password')) {
+                throw new Error('Password cannot include the word "password"');
+            }
+        }
     },
     bio:{
         type:String,
-        required:true
     },
     friendRequests: [friendRequestSchema],
     friendsArray: [friendSchema],

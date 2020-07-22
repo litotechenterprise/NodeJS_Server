@@ -2,6 +2,7 @@
 const { event, point, eventReq, guest } = require('./event.model');
 const { user, friendRequest, friend, notifications } = require('./user.model');
 const { convos, message } = require('./chat.model');
+const { emailPin } = require('./emailPin.model');
 
 module.exports = {
     event,
@@ -13,5 +14,6 @@ module.exports = {
     friend,
     friendRequest,
     convos,
-    message
+    message,
+    emailPin,
 };

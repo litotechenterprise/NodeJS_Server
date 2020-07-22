@@ -2,13 +2,14 @@
 require('dotenv').config();
 const express = require('express');
 const UserRoute = express.Router();
-const { user, point, event, notifications} = require('../db/models');
+const { user,  event, notifications, emailPin} = require('../db/models');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const requireAuth = require('../middleware/requireAuth');
 const sharp = require('sharp');
-const { userRoute } = require('.');
+const sgMail = require('@sendgrid/mail');
+
 
 
 //getting all users!
@@ -303,8 +304,6 @@ UserRoute.post('/set/pushToken', requireAuth, async(req,res) => {
 })
 
 
-
-
 UserRoute.post('/add/recent', requireAuth, async(req,res) => {
    try{
       for(let i=0; i<req.user.recentlyViewed.length;i++){
@@ -346,6 +345,33 @@ UserRoute.get('/get/recents', requireAuth, async(req,res) => {
 
 
 // AUTHENTICATION
+UserRoute.post('/check/username/password', async (req,res) => {
+   // Checking to see if there is an exsiting email
+   const exsitingEmail = await user.findOne({
+      email: req.body.NewUserInfo.email
+   })
+
+   // if so return
+   if(exsitingEmail) {
+      return res.sendStatus(400)
+   }
+
+   // checking to see if Username is already Taken
+   const exsitingUsername = await user.findOne({
+      username: req.body.NewUserInfo.username
+   })
+
+   // if so return
+   if(exsitingUsername) {
+      return res.sendStatus(406)
+   }
+
+   return res.sendStatus(200)
+
+})
+
+
+// Creating a new User!
 UserRoute.route('/create')
    .post(async (req,res) => {
       try {
@@ -356,7 +382,7 @@ UserRoute.route('/create')
                password:hash,
                firstName:req.body.firstName,
                lastName:req.body.lastName,
-               bio: req.body.bio,
+               DOB: req.body.DOB,
                refreshFFeed: Date.now(),
                refreshCFeed: Date.now(),
            });
@@ -373,7 +399,7 @@ UserRoute.route('/create')
       }
    })
 
-
+// logging user in
 UserRoute.route('/login')
    .post(async (req,res) => {
       const username = req.body.username;
@@ -406,6 +432,7 @@ UserRoute.route('/login')
       }
 });
 
+// Logging curent user out
 UserRoute.post('/logout', requireAuth, async (req, res) => {
    try {
          req.user.tokens = [];
@@ -466,7 +493,7 @@ UserRoute.route('/profilePic')
          res.send()
    })
 
-
+// Being able to view the image!
 UserRoute.get('/:id/profilePic', async (req,res) => {
    try {
       // find user by id param
@@ -521,7 +548,6 @@ UserRoute.route('/pictures')
 
 
 UserRoute.get('/:id/pictures/:num', async (req,res) => {
-
    try {
       const User = await user.findById(req.params.id)
       res.set('Content-Type', 'image/png')
@@ -584,6 +610,7 @@ UserRoute.post('/block', requireAuth, async(req,res) => {
    }
 })
 
+// Finding all of your blocked users
 UserRoute.get('/get/blocked', requireAuth, async (req,res) => {
    try {
       res.send(req.user.BlockedUsers)
@@ -620,6 +647,78 @@ UserRoute.post('/unblock', requireAuth, async(req,res) => {
       console.log(e)
       res.sendStatus(200)
    }
+})
+
+
+
+// Verify Email with sendgrid
+UserRoute.post("/send/verifyEmail", async (req,res) => {
+      try{
+         // set api key
+         sgMail.setApiKey(process.env.SendGrid_API_KEY);
+
+         // create a pin number
+         const pinNum = Math.floor(Math.random() * 899999 + 100000)
+         const existingEmail = await emailPin.findOne({
+            email:req.body.Email
+         })
+         // see email is in collecton
+         if(!existingEmail){
+            let newEmailPin = new emailPin({
+               email: req.body.Email,
+               pin_num: pinNum
+            })
+
+            newEmailPin.save()
+            console.log("new")
+         } else {
+            // set new pin number if it is exsiting
+            existingEmail.pin_num = pinNum 
+            await existingEmail.save()
+            console.log("updated")
+         }
+
+         // create message to be sent
+         const msg = {
+            to: req.body.Email,
+            from: 'pabs1314@gmail.com',
+            subject: 'Verify Email Address',
+            text: 'Please enter the following code to verify Email Address' + pinNum,
+            html: '<strong>Verify Email Address with Pin number:  </strong>' + pinNum,
+         };
+         // send email
+         sgMail.send(msg);
+
+         // send request
+         res.status(200).send("sent")
+      } catch(e) {
+            console.log(e.message)
+            res.sendStatus(400)
+      } 
+})
+
+UserRoute.post("/verify/pin", async (req,res) => {
+   try {
+
+      console.log(req.body)
+      const FoundEmailNPin = await emailPin.findOne({
+         email: req.body.email
+      })
+
+
+      if(FoundEmailNPin.pin_num === Number(req.body.pin)){
+         console.log("Verifyed Email")
+         return res.sendStatus(200)
+      } 
+      
+      return res.sendStatus(400)
+    
+
+   } catch (e) {
+      console.log(e.message)
+      res.sendStatus(400)
+   }
+   
 })
 
 
