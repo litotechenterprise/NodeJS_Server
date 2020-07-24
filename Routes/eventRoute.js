@@ -6,7 +6,7 @@ const requireAuth = require('../middleware/requireAuth');
 
 // Creating a new Event
 eventRouter.post('/create',requireAuth, async(req, res) => {
-  
+    
     try {  
         let newEvent = new event({
             title: req.body.title,
@@ -19,7 +19,9 @@ eventRouter.post('/create',requireAuth, async(req, res) => {
             privacy: req.body.privacy,
             createdAt: Date.now(),
             owner: req.user._id,
-            username: req.user.username
+            username: req.user.username,
+            startTime:req.body.start,
+            endTime:req.body.end
         });
 
         

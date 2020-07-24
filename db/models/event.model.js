@@ -100,7 +100,16 @@ const EventSchema = new mongoose.Schema({
         trim: true
     },
     guestList:[Guest],
-    eventRequests: [EventRequestSchema]
+    eventRequests: [EventRequestSchema],
+    startTime: {
+        type:String,
+        required:true
+    },
+    endTime: {
+        type:String,
+        required:true
+    },
+
 }, {
     timestamps: true
 });

@@ -324,22 +324,25 @@ UserRoute.post('/add/recent', requireAuth, async(req,res) => {
 UserRoute.get('/get/recents', requireAuth, async(req,res) => {
    try{
       let recentEvents = []
-      let max = req.user.recentlyViewed.length
-      if(req.user.recentlyViewed.length > 15){
+      const User = req.user
+      let max = User.recentlyViewed.length
+      if(User.recentlyViewed.length > 15){
          max = 15
       }
-      const recentList = req.user.recentlyViewed.reverse()
+      const recentList = User.recentlyViewed.reverse()
       for(let i=0; i < max; i++){
          const Event = await event.findOne({_id:recentList[i]})
          if(!Event){
-            return
+            User.updateOne({
+               $pull: {recentlyViewed: {$eq:recentList[i]}}
+            })
+         } else {
+            recentEvents.push(Event)
          }
-         recentEvents.push(Event)
       }
-
       res.status(200).send(recentEvents)
    } catch(err) {
-
+      res.sendStatus(400)
    }
 })
 
